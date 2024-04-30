@@ -1,0 +1,1101 @@
+--------------- FIRST & FOLLOW() ----------------
+
+
+
+#include<iostream>  
+    #include<string.h>
+    #define max 20
+
+    using namespace std;
+
+    char prod[max][10];
+    char ter[10],nt[10];
+    char first[10][10],follow[10][10];
+    int eps[10];  
+    int count_var=0;
+
+    int findpos(char ch) {
+        int n;
+        for(n=0;nt[n]!='\0';n++)
+            if(nt[n]==ch) break;
+            if(nt[n]=='\0') return 1;
+            return n;
+    }
+        
+    int IsCap(char c) {
+        if(c >= 'A' && c<= 'Z')
+            return 1;
+        return 0;
+    }
+    
+    void add(char *arr,char c) {
+        int i,flag=0;
+        for(i=0;arr[i]!='\0';i++) {
+            if(arr[i] == c) {
+                flag=1;
+                break;
+            }
+        }
+        if(flag!=1) arr[strlen(arr)] = c;
+    }
+    
+    void addarr(char *s1,char *s2) {
+        int i,j,flag=99;
+        for(i=0;s2[i]!='\0';i++) {
+            flag=0;
+            for(j=0;;j++) {
+                if(s2[i]==s1[j]) {
+                    flag=1;
+                    break;
+                }
+                if(j==strlen(s1) && flag!=1) {
+                    s1[strlen(s1)] = s2[i];
+                    break;
+                }
+            }
+        }
+    }
+    
+    void addprod(char *s) {
+        int i;
+        prod[count_var][0] = s[0];
+        for(i=3;s[i]!='\0';i++) {
+            if(!IsCap(s[i])) add(ter,s[i]);
+            prod[count_var][i-2] = s[i];
+        }
+        prod[count_var][i-2] = '\0';
+        add(nt,s[0]);
+        count_var++;
+    }
+    
+    void findfirst() {
+        int i,j,n,k,e,n1;
+        for(i=0;i<count_var;i++) {
+            for(j=0;j<count_var;j++) {
+                n = findpos(prod[j][0]);
+                if(prod[j][1] == (char)238) eps[n] = 1;
+                else {
+                    for(k=1,e=1;prod[j][k]!='\0' && e==1;k++) {
+                        if(!IsCap(prod[j][k])) {
+                            e=0;
+                            add(first[n],prod[j][k]);
+                        }
+                        else {
+                            n1 = findpos(prod[j][k]);
+                            addarr(first[n],first[n1]);
+                            if(eps[n1]==0)
+                                e=0;
+                        }
+                    }
+                    if(e==1) eps[n]=1;
+                }
+            }
+        }
+    }
+    
+    void findfollow() {
+        int i,j,k,n,e,n1;
+        n = findpos(prod[0][0]);
+        add(follow[n],'#');
+        for(i=0;i<count_var;i++) {
+            for(j=0;j<count_var;j++) {
+                k = strlen(prod[j])-1;
+                for(;k>0;k--) {
+                    if(IsCap(prod[j][k])) {
+                        n=findpos(prod[j][k]);
+                        if(prod[j][k+1] == '\0')
+                        {
+                            n1 = findpos(prod[j][0]);
+                            addarr(follow[n],follow[n1]);
+                        }
+                        if(IsCap(prod[j][k+1]))
+                        {
+                            n1 = findpos(prod[j][k+1]);
+                            addarr(follow[n],first[n1]);
+                            if(eps[n1]==1)
+                            {
+                                n1=findpos(prod[j][0]);
+                                addarr(follow[n],follow[n1]);
+                            }
+                        }
+                        else if(prod[j][k+1] != '\0')
+                            add(follow[n],prod[j][k+1]);
+                    }
+                }
+            }
+        }
+    }
+    
+    int main() {
+        char s[max],i;
+        cout<<"Enter the productions\n";
+        cin>>s;
+        while(strcmp("end",s)) {
+            addprod(s);
+            cin>>s;
+        }
+        findfirst();
+        findfollow();
+        for(i=0;i<strlen(nt);i++) {
+            cout<<nt[i]<<"\t";
+            cout<<first[i];
+            if(eps[i]==1) cout<<((char)238)<<"\t";
+            else cout<<"\t";
+            cout<<follow[i]<<"\n";
+        }
+        return 0;
+
+}
+
+
+
+------------ CODE OPTIMIZATION ------------------
+
+n=int(input('Enter number of operations '))
+S=[]
+for i in range(n) :
+    S.append(input())
+
+optimizer = []
+for i in range(len(S)) :
+    S[i] = S[i].split('=')
+    print(S[i])
+
+for i in range(len(S)) :
+    for j in range(i+1, len(S)) :
+        if S[i][1] in S[j][1] :
+            for k in range(j-1, i-1, -1) :
+                if S[j][1][1] in S[k][0] or S[j][1][5] in S[k][0] :
+                    break
+            else :
+                S[j][1] = S[i][0]
+    optimizer.append(S[i][0] + ' = ' + S[i][1])
+
+for i in optimizer :
+    print(i)
+
+
+
+
+----------- LEXICAL ANALYZER -------------
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.Scanner;
+import java.util.*;
+
+public class Main
+{
+    static ArrayList<Integer> count = new ArrayList<Integer>();
+    static ArrayList<String> elm = new ArrayList<String>();
+    static String[] operators = { "=", "+", "-", "*", "/"};
+    
+    static String[] keywords = { "abstract", "assert", "boolean",
+                "break", "byte", "case", "catch", "char", "class", "const",
+                "continue", "default", "do", "double", "else", "extends", "false",
+                "final", "finally", "float", "for", "goto", "if", "implements",
+                "import", "instanceof", "int", "interface", "long", "native",
+                "new", "null", "package", "private", "protected", "public",
+                "return", "short", "static", "strictfp", "super", "switch",
+                "synchronized", "String", "this", "throw", "throws", "transient", "true",
+                "try", "void", "volatile", "while" };
+    static String alphabet = "[a-zA-Z]+\\w*";
+    static String[] deli = { "\t","\n",",",";","(",")","{","}","[","]","#","<",">"};
+    static Pattern numberpattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+    static Pattern pattern = Pattern.compile(alphabet);
+    
+    public static void main(String[] args)
+    {
+        Scanner sc = new Scanner(System.in);
+        String str = sc.nextLine();
+        String[] arr = str.split(" ");
+        count.add(0); // keyword
+        count.add(0); // Number
+        count.add(0); // Operator
+        count.add(0); // Identifier
+        count.add(0); // Invalid Indentifier
+        count.add(0); // Demimiter
+        elm.add("keyword");
+        elm.add("constant");
+        elm.add("operator");
+        elm.add("identifier");
+        elm.add("invalid identifier");
+        elm.add("delimiter");
+        
+        for (String a : arr)
+        {
+            System.out.println(a + " -> " + token(a));
+        }
+        for (int i = 0; i < count.size(); i++)
+        {
+            System.out.println(elm.get(i) + " = " + count.get(i));
+        }
+    }
+    
+    public static String token(String a)
+    {
+        for (String key : keywords)
+        {
+            if (key.equals(a))
+            {
+                count.set(0, count.get(0) + 1);
+                return "Keyword";
+            }
+        }
+        Matcher matchernum = numberpattern.matcher(a);
+        if (matchernum.matches())
+        {
+            count.set(1, count.get(1) + 1);
+            return "Constant";
+        }
+        for (String del : deli)
+        {
+            if (del.equals(a))
+            {
+                count.set(5, count.get(5) + 1);
+                return "Keyword";
+            }
+        }
+        for (String op : operators)
+        {
+            if (op.equals(a))
+            {
+                count.set(2, count.get(2) + 1);
+                return "Operator";
+            }
+        }
+        Matcher matcheralpha = pattern.matcher(a);
+        if (matcheralpha.matches())
+        {
+            count.set(3, count.get(3) + 1);
+            return "Identifier";
+        }
+        count.set(4, count.get(4) + 1);
+        return "Invalid Identifier";
+    }
+}
+
+
+
+
+------------------- ICG ---------------------
+
+
+import java.io.*;
+//
+public class threecodeform
+{
+    private static final char[][] precedence = {
+        {'/','1'},
+        {'*','1'},
+        {'+','2'},
+        {'-','2'}
+    };
+
+    private static int precedenceOf(String t){
+        char token = t.charAt(0);
+        for (int i=0; i < precedence.length; i++){
+            if(token == precedence[i][0]){
+                return Integer.parseInt(precedence[i][1]+"");
+            }
+        }
+        return -1;
+    }
+
+    public static void main() throws Exception{
+        int i, j, opc=0;
+        char token;
+        boolean processed[];
+        String[][] operators = new String[10][2];
+        String expr = "", temp;
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        System.out.print("\fEnter an expression for calculating Address codes : ");
+        expr = in.readLine();
+        processed = new boolean[expr.length()];
+        for (i=0; i<processed.length; i++){
+            processed[i] = false;
+        }
+        for (i=0; i< expr.length(); i++){
+            token = expr.charAt(i);
+            for (j=0; j< precedence.length; j++){
+                if(token == precedence[j][0]){
+                    operators[opc][0] =token+"";
+                    operators[opc][1] = i+"";
+                    opc++;
+                    break;
+                }
+            }
+        }
+        
+        
+        System.out.println("\n Operators: \n Operators \t Location number\n ");
+        for (i=0; i<opc; i++){
+            System.out.println(operators[i][0] + "\t\t" + operators[i][1]);
+        }
+        //sort
+        for (i=opc-1; i >= 0; i--){
+            for(j=0; j<i; j++){
+                if(precedenceOf(operators[j][0]) > precedenceOf(operators[j+1][0])){
+                    temp = operators[j][0];
+                    operators[j][0] = operators[j+1][0];
+                    operators[j+1][0] = temp;
+                    temp = operators[j][1];
+                    operators[j][1] = operators[j+1][1];
+                    operators[j+1][1] = temp;
+                }
+            }
+        }
+        System.out.println("\n Operators sorted in their precedence : \n Operators \t Location number \n");
+        for (i=0; i<opc; i++){
+            System.out.println(operators[i][0] + "\t\t" + operators[i][1]);
+        }
+        System.out.println();
+        for (i = 0; i < opc; i++){
+            j = Integer.parseInt(operators[i][1] + "");
+            String op1 = "", op2 = "";
+            if( processed[j-1]== true){
+                if (precedenceOf(operators[i-1][0])== precedenceOf(operators[i][0])){
+                    op1 = "t" +i;
+                }
+                else{
+                    for (int x = 0; x < opc; x++){
+                        if((j-2)== Integer.parseInt(operators[x][1])){
+                            op1 = "t" + (x+1) + "";
+                        }
+                    }
+                }
+            }
+            else{
+                op1 = expr.charAt(j-1) + "";
+            }
+            if (processed[j+1] == true){
+                for(int x = 0; x < opc; x++){
+                    if((j+2) == Integer.parseInt(operators[x][1])){
+                        op2 = "t" + (x + 1) + "";
+                    }
+                }
+            }
+            else{
+                op2 = expr.charAt(j+1) + "";
+            }
+            System.out.println("t"+ (i+1) + " = " + op1 + operators[i][0] + op2);
+            processed[j] = processed[j-1] = processed[j+1] = true;
+        }
+
+    }
+}
+
+------------- LEX TOOL COUNT KEYWORDS & STUFF ---------------
+demo.l
+
+
+%{
+int n = 0 ;
+%}
+%%
+"while"|"if"|"else" {n++;printf("\t keywords : %s",
+yytext);}
+"int"|"float" {n++;printf("\t keywords : %s", yytext);}
+[a-zA-Z_][a-zA-Z0-9_]* {n++;printf("\t identifier :
+%s", yytext);}
+"<="|"=="|"="|"++"|"-"|"*"|"+" {n++;printf("\t operator :
+%s", yytext);}
+[(){}|, ;] {n++;printf("\t separator : %s", yytext);}
+
+[0-9]*"."[0-9]+ {n++;printf("\t float : %s", yytext);}
+[0-9]+ {n++;printf("\t integer : %s", yytext);}
+“* end *” {printf("\n total no. of token = %d\n", n); }
+
+. ;
+%%
+int main()
+{
+yylex();
+}
+int yywrap(){
+return 1;
+}
+---------
+lexical_analyser--symbol--literals
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <unordered_set>
+
+using namespace std;
+
+unordered_set<string> keywords = {"void", "using", "namespace", "int", "float", "double", "return",
+                                   "if", "else", "while", "for", "do", "switch", "case", "default",
+                                   "break", "continue", "goto", "const", "auto", "static", "extern",
+                                   "register", "sizeof", "typedef", "volatile", "constexpr"};
+
+unordered_set<string> headerFiles = {"<iostream>", "<cstring>", "<cstdlib>", "<cctype>", "<fstream>", "<string>"};
+
+bool isOperator(const string &token) {
+    return token == "+" || token == "-" || token == "*" || token == "/" || token == "^" ||
+           token == "&&" || token == "||" || token == "=" || token == "==" || token == "&" ||
+           token == "|" || token == "%" || token == "++" || token == "--" || token == "+=" ||
+           token == "-=" || token == "/=" || token == "*=" || token == "%=";
+}
+
+bool isSymbol(const string &token) {
+    return token == "(" || token == "{" || token == "[" || token == ")" || token == "}" ||
+           token == "]" || token == "<" || token == ">" || token == "()" || token == ";" ||
+           token == "<<" || token == ">>" || token == "," || token == "#";
+}
+
+bool isNumber(const string &token) {
+    try {
+        size_t pos;
+        stod(token, &pos);
+        return pos == token.size();
+    } catch (const std::invalid_argument&) {
+        return false; // Not a valid number
+    }
+}
+
+bool isKeyword(const string &token) {
+    return keywords.count(token);
+}
+
+bool isHeaderFile(const string &token) {
+    return headerFiles.count(token);
+}
+
+int main() {
+    ifstream file("prog.txt");
+    if (!file) {
+        cerr << "Error opening file." << endl;
+        return 1;
+    }
+
+    stringstream buffer;
+    buffer << file.rdbuf();
+    string code = buffer.str();
+
+    string token;
+    istringstream iss(code);
+    while (iss >> token) {
+        if (token.empty()) continue;
+        if (token[0] == '"' && token[token.length() - 1] == '"') {
+            cout << token << " is a message" << endl;
+        } else if (token[0] == '/') {
+            cout << token << " is a comment" << endl;
+        } else {
+            if (isKeyword(token)) {
+                cout << token << " is a keyword" << endl;
+            } else if (isHeaderFile(token)) {
+                cout << token << " is a Header File" << endl;
+            } else if (isOperator(token)) {
+                cout << token << " is an operator" << endl;
+            } else if (isSymbol(token)) {
+                cout << token << " is a symbol" << endl;
+            } else if (isNumber(token)) {
+                cout << token << " is a number" << endl;
+            } else { // Check if token is an identifier
+                cout << token << " is an identifier" << endl;
+            }
+        }
+    }
+
+    return 0;
+}
+prog.txt:
+#include <iostream>
+using namespace std;
+int main(){
+    int a , b , c = 20 ;
+    cout << c ;
+    return 0 ;
+}
+
+
+
+
+
+3ac_triple_quad.py:
+# Define a function to convert an infix expression to postfix notation
+def infix_to_postfix(expression):
+    precedence = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
+    postfix = []
+    stack = []
+    
+    for char in expression:
+        if char.isalnum():
+            postfix.append(char)
+        elif char == '(':
+            stack.append(char)
+        elif char == ')':
+            while stack and stack[-1] != '(':
+                postfix.append(stack.pop())
+            stack.pop()  # Pop the left parenthesis
+        else:
+            while stack and stack[-1] != '(' and precedence[char] <= precedence[stack[-1]]:
+                postfix.append(stack.pop())
+            stack.append(char)
+    
+    while stack:
+        postfix.append(stack.pop())
+    
+    return postfix
+
+# Define a function to generate triples from a postfix expression
+def generate_triples(postfix):
+    stack = []
+    code = []
+    
+    for token in postfix:
+        if token.isalnum():
+            stack.append(token)
+        else:
+            arg2 = stack.pop()
+            arg1 = stack.pop()
+            code.append((token, arg1, arg2))
+            stack.append("t" + str(len(code)))
+    
+    return code
+
+# Define a function to generate quadruples from a postfix expression
+def generate_quadruples(postfix):
+    stack = []
+    code = []
+    temp_count = 1
+    
+    for token in postfix:
+        if token.isalnum():
+            stack.append(token)
+        else:
+            arg2 = stack.pop()
+            arg1 = stack.pop()
+            result = "t" + str(temp_count)
+            temp_count += 1
+            code.append((token, arg1, arg2, result))
+            stack.append(result)
+    
+    return code
+
+# Define a function to generate three-address code from a postfix expression
+def generate_three_address_code(postfix):
+    stack = []
+    code = []
+    temp_count = 1
+
+    for token in postfix:
+        if token.isalnum():
+            stack.append(token)
+        else:
+            arg2 = stack.pop()
+            arg1 = stack.pop()
+            result = "t" + str(temp_count)
+            temp_count += 1
+            code.append((result, arg1, token, arg2))
+            stack.append(result)
+            print(result, "=", arg1, token, arg2)
+
+# Main function
+def main():
+    # Read in an arithmetic expression from the user
+    expression = "(a+(b*c))/(a-(b*c))"
+    #input("Enter an arithmetic expression: ")
+    
+    # Convert the expression to postfix notation
+    postfix = infix_to_postfix(expression)
+    print("Postfix notation:", " ".join(postfix))
+    
+    # Generate and output the quadruples
+    quadruples = generate_quadruples(postfix)
+    print("Quadruples:")
+    for q in quadruples:
+        print("({}, {}, {}, {})".format(q[0], q[1], q[2], q[3]))
+        
+    # Generate and output the triples
+    triples = generate_triples(postfix)
+    print("Triples:")
+    for t in triples:
+        print("({}, {}, {})".format(t[0], t[1], t[2]))
+    
+    # Generate and output the three-address code
+    print("Three-address code:")
+    generate_three_address_code(postfix)
+
+if __name__ == "__main__":
+    main()
+
+
+
+first_follow_final.py
+
+
+# Function to compute the FIRST set for a given string
+def first(string):
+    first_ = set()
+    # If the string is a non-terminal, calculate FIRST for each alternative
+    if string in non_terminals:
+        for alt in productions_dict[string]:
+            first_ |= first(alt)
+    # If the string is a terminal, epsilon, or empty, FIRST is the string itself
+    elif string in terminals or string == '' or string == '@':
+        first_ = {string}
+    else:
+        # Calculate FIRST for the first character of the string
+        first_ |= first(string[0])
+        # If FIRST contains epsilon, compute FIRST for subsequent characters
+        if '@' in first_:
+            i = 1
+            while '@' in first_:
+                # Remove epsilon from FIRST
+                first_ -= {'@'}
+                # If end of string is reached, add epsilon to FIRST
+                if i == len(string):
+                    first_ |= {'@'}
+                    break
+                # Calculate FIRST for the rest of the string
+                first_ |= first(string[i:])
+                i += 1
+    return first_
+
+
+# Function to compute the FOLLOW set for a given non-terminal symbol
+def follow(nT):
+    follow_ = set()
+    # If it's the starting symbol, add end of input marker to FOLLOW
+    if nT == starting_symbol:
+        follow_ = {'$'}
+    # Iterate over productions to compute FOLLOW sets
+    for nt, rhs in productions_dict.items():
+        for alt in rhs:
+            for idx, char in enumerate(alt):
+                if char == nT:
+                    following_str = alt[idx + 1:]
+                    if following_str == '':
+                        # If no symbols follow, add FOLLOW of the non-terminal
+                        if nt != nT:
+                            follow_ |= follow(nt)
+                    else:
+                        # Add FIRST of following string to FOLLOW
+                        follow_ |= first(following_str) - {'@'}
+                        # If FIRST contains epsilon, add FOLLOW of non-terminal
+                        if '@' in first(following_str):
+                            follow_ |= follow(nt)
+    return follow_
+
+
+
+# Input gathering
+terminals = [input(f"Enter terminal {i + 1}: ") for i in range(int(input("Enter no. of terminals: ")))]
+non_terminals = [input(f"Enter non-terminal {i + 1}: ") for i in range(int(input("Enter no. of non-terminals: ")))]
+starting_symbol = input("Enter the starting symbol: ")
+productions_dict = {nt: [] for nt in non_terminals}
+
+# Parsing productions
+for _ in range(int(input("Enter no. of productions: "))):
+    nt, rhs = input("Enter production: ").split("->")
+    productions_dict[nt].extend(rhs.split("/"))
+
+# Computing and printing FIRST sets
+print("\nFIRST sets:")
+for nt in non_terminals:
+    print(f"FIRST({nt}) = {first(nt)}")
+# Computing FOLLOW sets
+FOLLOW = {nt: set() for nt in non_terminals}
+FOLLOW[starting_symbol] = {'$'}
+for nt in non_terminals:
+    FOLLOW[nt] |= follow(nt)
+# Printing FOLLOW sets
+print("\nFOLLOW sets:")
+for nt in non_terminals:
+    print(f"FOLLOW({nt}) = {str(FOLLOW[nt])}")
+
+"""
+Enter no. of terminals: 6
+Enter terminal 1: a
+Enter terminal 2: b
+Enter terminal 3: c
+Enter terminal 4: h
+Enter terminal 5: g
+Enter terminal 6: f
+Enter no. of non-terminals: 6
+Enter non-terminal 1: S
+Enter non-terminal 2: B
+Enter non-terminal 3: C
+Enter non-terminal 4: D
+Enter non-terminal 5: E
+Enter non-terminal 6: F
+Enter the starting symbol: S
+Enter no. of productions: 6
+Enter production: S->aBDh
+Enter production: B->cC
+Enter production: C->bC/@
+Enter production: D->EF
+Enter production: E->g/@
+Enter production: F->f/@
+
+FIRST sets:
+FIRST(S) = {'a'}
+FIRST(B) = {'c'}
+FIRST(C) = {'@', 'b'}
+FIRST(D) = {'g', 'f', '@'}
+FIRST(E) = {'g', '@'}
+FIRST(F) = {'@', 'f'}
+
+FOLLOW sets:
+FOLLOW(S) = {'$'}
+FOLLOW(B) = {'g', 'f', 'h'}
+FOLLOW(C) = {'g', 'f', 'h'}
+FOLLOW(D) = {'h'}
+FOLLOW(E) = {'f', 'h'}
+FOLLOW(F) = {'h'}
+"""
+
+macro_expanded.py
+class MacroProcessor:
+    def __init__(self):
+        self.macros = {}
+
+    def define_macro(self, name, definition):
+        self.macros[name] = definition
+
+    def expand_macros(self, source):
+        lines = source.split('\n')
+        expanded_lines = []
+        for line in lines:
+            tokens = line.split()
+            expanded_tokens = []
+            for token in tokens:
+                if token in self.macros:
+                    expanded_tokens.extend(self.macros[token])
+                else:
+                    expanded_tokens.append(token)
+            expanded_lines.append(expanded_tokens)
+        return expanded_lines
+
+    def resolve_symbols(self, source):
+        lines = source.split('\n')
+        resolved_lines = []
+        for line in lines:
+            tokens = line.split()
+            resolved_tokens = []
+            for token in tokens:
+                if not token.startswith('$'):
+                    resolved_tokens.append(token)
+            resolved_lines.append(resolved_tokens)
+        return resolved_lines
+
+    def process_source(self, source):
+        # First pass: Expand macros
+        expanded_lines = self.expand_macros(source)
+        # Second pass: Resolve symbols
+        resolved_lines = self.resolve_symbols('\n'.join([' '.join(line) for line in expanded_lines]))
+        return '\n'.join([' '.join(line) for line in resolved_lines])
+
+# Example usage:
+if __name__ == "__main__":
+    processor = MacroProcessor()
+    # Define macros
+    processor.define_macro('LOOP', ['MOV AX, 0', 'MOV CX, 10', 'L1:', 'ADD AX, 1', 'LOOP L1'])
+    processor.define_macro('MSG', ['MOV AH, 9', 'INT 21h'])
+    # Source code with macros
+    source_code = """
+    LOOP
+    MSG $HELLO
+    HLT
+    $HELLO DB 'Hello, world!', '$'
+    """
+    # Process the source code
+    processed_code = processor.process_source(source_code)
+    print(processed_code)
+
+optimization_tac.py:
+class ThreeAddressCode:
+    def __init__(self, op, arg1, arg2, result):
+        self.op = op
+        self.arg1 = arg1
+        self.arg2 = arg2
+        self.result = result
+
+def optimize_code(three_address_code):
+    optimized_code = []
+    expressions = {}
+
+    for tac in three_address_code:
+        expression = (tac.op, tac.arg1, tac.arg2)
+        if expression not in expressions:
+            expressions[expression] = tac.result
+            optimized_code.append(tac)
+        else:
+            tac.arg1 = expressions[expression]
+            tac.arg2=""
+            tac.op = ""
+            optimized_code.append(tac)
+
+    return optimized_code
+
+def simplify_algebraic(optimized_code):
+    simplified_code = []
+
+    for tac in optimized_code:
+        if tac.op == '+':
+            if tac.arg1 == 0:
+                tac.result = tac.arg2
+            elif tac.arg2 == 0:
+                tac.result = tac.arg1
+            elif isinstance(tac.arg1, int) and isinstance(tac.arg2, int):
+                tac.arg1 = tac.arg1 + tac.arg2
+                tac.arg2 = ' '
+                tac.op = ' '
+                simplified_code.append(tac)
+            else:
+                simplified_code.append(tac)
+        elif tac.op == '-':
+            if tac.arg2 == 0:
+                tac.result = tac.arg1
+            elif isinstance(tac.arg1, int) and isinstance(tac.arg2, int):
+                tac.arg1 = tac.arg1 - tac.arg2
+                tac.arg2 = ' '
+                tac.op = ' '
+                simplified_code.append(tac)
+            else:
+                simplified_code.append(tac)
+        elif tac.op == '*':
+            if tac.arg2 == 0 or tac.arg1 == 0:
+                tac.result = 0
+            elif tac.arg2 == 1:
+                tac.result = tac.arg1
+            elif tac.arg1 == 1:
+                tac.result = tac.arg2
+            elif isinstance(tac.arg1, int) and isinstance(tac.arg2, int):
+                tac.arg1 = tac.arg1 * tac.arg2
+                tac.arg2 = ' '
+                tac.op = ' '
+                simplified_code.append(tac)
+            else:
+                simplified_code.append(tac)
+        else:
+            simplified_code.append(tac)
+
+    return simplified_code
+
+def main():
+    # Example 3-address code
+    three_address_code = [
+        ThreeAddressCode('+', 2, 3, 't1'),
+        ThreeAddressCode('*', 't1', 5, 't2'),
+        ThreeAddressCode('*', 't1', 5, 't3'),
+        ThreeAddressCode('-', 't3', 5, 't4'),
+        ThreeAddressCode('+', 't2', 0, 't5'),
+        ThreeAddressCode('+', 't4', 't5', 't6')
+    ]
+
+    # Print original code for comparison
+    print("\nOriginal Code:")
+    for tac in three_address_code:
+        print(f"{tac.result} = {tac.arg1} {tac.op} {tac.arg2}")
+    # Common subexpression elimination
+    optimized_code = optimize_code(three_address_code)
+    
+    # Algebraic simplification
+    simplified_code = simplify_algebraic(optimized_code)
+
+    # Print optimized and simplified code
+    print("Optimized and Simplified Code:")
+    for tac in simplified_code:
+        print(f"{tac.result} = {tac.arg1} {tac.op} {tac.arg2}")
+
+
+if __name__ == "__main__":
+    main()
+
+------------ MOT Pot Symbol ASSEMBLER --------------
+#include <iostream>
+#include <unordered_map>
+#include <string>
+
+using namespace std;
+
+// Typedefs for convenience
+using MOT = unordered_map<string, pair<int, int>>; // (Opcode, Length)
+using POT = unordered_map<string, int>; // Length
+using ST = unordered_map<string, int>; // Address
+
+class Assembler {
+private:
+    MOT mot; // Machine Operation Table
+    POT pot; // Pseudo Operation Table
+    ST st; // Symbol Table
+
+    int locationCounter;
+
+public:
+    Assembler() : locationCounter(0) {
+        // Initialize MOT
+        mot["MOV"] = make_pair(1, 2);
+        mot["ADD"] = make_pair(2, 2);
+
+        // Initialize POT
+        pot["START"] = 0;
+        pot["END"] = 0;
+    }
+
+    // Function to add a symbol to the Symbol Table
+    void addToST(const string& symbol) {
+        st[symbol] = locationCounter;
+    }
+
+    // Function to process the assembly code in Pass 1
+    void pass1(const string& token) {
+        if (pot.find(token) != pot.end()) {
+            // If token is a pseudo operation
+            locationCounter += pot[token];
+        } else if (mot.find(token) != mot.end()) {
+            // If token is a machine operation
+            locationCounter += mot[token].second;
+        } else {
+            // Assume it's a symbol
+            addToST(token);
+        }
+    }
+
+    // Function to print the contents of MOT, POT, and ST
+    void printTables() {
+        cout << "Machine Operation Table (MOT):" << endl;
+        for (const auto& entry : mot) {
+            cout << entry.first << ": Opcode - " << entry.second.first << ", Length - " << entry.second.second << endl;
+        }
+
+        cout << "\nPseudo Operation Table (POT):" << endl;
+        for (const auto& entry : pot) {
+            cout << entry.first << ": Length - " << entry.second << endl;
+        }
+
+        cout << "\nSymbol Table (ST):" << endl;
+        for (const auto& entry : st) {
+            cout << entry.first << ": Address - " << entry.second << endl;
+        }
+    }
+};
+
+int main() {
+    Assembler assembler;
+
+    // Example assembly code
+    string assemblyCode[] = {"START", "MOV", "A", "B", "ADD", "C", "D", "END"};
+
+    // Pass 1
+    for (const auto& token : assemblyCode) {
+        assembler.pass1(token);
+    }
+
+    // Print MOT, POT, and ST
+    assembler.printTables();
+
+    return 0;
+}
+
+-----pass 1 pass2---
+#include <iostream>
+#include <map>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+// Structure to represent an entry in MOT
+struct MOTEntry {
+    string mnemonic;
+    int opcode;
+    int length;
+
+    MOTEntry(string _mnemonic, int _opcode, int _length)
+        : mnemonic(_mnemonic), opcode(_opcode), length(_length) {}
+};
+
+// Structure to represent an entry in POT
+struct POTEntry {
+    string pseudoOp;
+    int length;
+
+    POTEntry(string _pseudoOp, int _length)
+        : pseudoOp(_pseudoOp), length(_length) {}
+};
+
+// Structure to represent an entry in ST
+struct SymbolEntry {
+    string symbol;
+    int address;
+
+    SymbolEntry(string _symbol, int _address)
+        : symbol(_symbol), address(_address) {}
+};
+
+class Assembler {
+private:
+    map<string, MOTEntry> mot;
+    map<string, POTEntry> pot;
+    map<string, SymbolEntry> st;
+    int locationCounter;
+
+public:
+    Assembler() {
+        // Initialize MOT
+        mot["MOV"] = MOTEntry("MOV", 1, 2);
+        mot["ADD"] = MOTEntry("ADD", 2, 2);
+        // Initialize POT
+        pot["START"] = POTEntry("START", 0);
+        pot["END"] = POTEntry("END", 0);
+        // Initialize location counter
+        locationCounter = 0;
+    }
+
+    void addToST(string symbol) {
+        st[symbol] = SymbolEntry(symbol, locationCounter);
+    }
+
+    bool isMnemonic(string token) {
+        return mot.find(token) != mot.end();
+    }
+
+    bool isPseudoOp(string token) {
+        return pot.find(token) != pot.end();
+    }
+
+    void pass1(vector<string> tokens) {
+        for (const string& token : tokens) {
+            if (isPseudoOp(token)) {
+                locationCounter += pot[token].length;
+            } else if (isMnemonic(token)) {
+                locationCounter += mot[token].length;
+            } else {
+                // Assume it's a symbol
+                addToST(token);
+            }
+        }
+    }
+
+    void pass2(vector<string> tokens) {
+        for (const string& token : tokens) {
+            if (isPseudoOp(token)) {
+                cout << "POT: " << token << endl;
+            } else if (isMnemonic(token)) {
+                cout << "MOT: " << token << " Opcode: " << mot[token].opcode << endl;
+            } else {
+                // Assume it's a symbol
+                cout << "ST: " << token << " Address: " << st[token].address << endl;
+            }
+        }
+    }
+};
+
+int main() {
+    Assembler assembler;
+
+    // Example assembly code
+    vector<string> assemblyCode = {"START", "MOV", "A", "B", "ADD", "C", "D", "END"};
+
+    // Pass 1
+    assembler.pass1(assemblyCode);
+
+    // Pass 2
+    assembler.pass2(assemblyCode);
+
+    return 0;
+}
